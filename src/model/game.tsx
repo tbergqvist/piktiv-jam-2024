@@ -4,7 +4,7 @@ import { JSX } from "preact/jsx-runtime";
 import { ImgPos } from "../view/image";
 import { preloadImages } from "./preload";
 import { GameOverScene } from "../view/game-over-scene";
-import { MountainScene } from "../view/mountain-scene";
+import { MountainClicks, MountainScene } from "../view/mountain-scene";
 import { loadState, saveState } from "./state";
 
 function animateTo(pos: Signal<ImgPos>, endPos: ImgPos, animationTime: number): Promise<void> {
@@ -105,25 +105,50 @@ export function createGame() {
 
 		saveState({level: 1});
 		setText(undefined);
-		clickHandlers.value = { door: runMountainScene};
+		clickHandlers.value = { door: runMountainScene };
 	}
 
 	async function runMountainScene() {
 		const ufoPos = new Signal({x: 650, y: 0, scale: 0} as ImgPos);
 		const catPos = new Signal({x: 900, y: 350, scale: 0.5} as ImgPos);
-		changeScene(<MountainScene ufoPos={ufoPos} catPos={catPos} />);
-		await animateTo(ufoPos, {x: 700, y: 100, scale: 0.4}, 1000);
-		await Promise.all([
-			animateTo(ufoPos, {x: 700, y: -50, scale: 0.5}, 1000),
-			animateTo(catPos, {x: 900, y: 150, scale: 0.5}, 1000)
-		]);
+		const clickHandlers: Signal<MountainClicks | undefined> = new Signal(undefined);
+		changeScene(<MountainScene ufoPos={ufoPos} catPos={catPos} clickHandlers={clickHandlers}/>);
+		if (currentState.level >= 2) {
+			ufoPos.value = {x: 1300, y: -50, scale: 0.7};
+			catPos.value = {x: 1500, y: 150, scale: 0.8};
+		} else {
+			await animateTo(ufoPos, {x: 700, y: 100, scale: 0.4}, 1000);
+			await Promise.all([
+				animateTo(ufoPos, {x: 700, y: -50, scale: 0.5}, 1000),
+				animateTo(catPos, {x: 900, y: 150, scale: 0.5}, 1000)
+			]);
 
-		await Promise.all([
-			animateTo(ufoPos, {x: 1300, y: -50, scale: 0.7}, 1000),
-			animateTo(catPos, {x: 1500, y: 150, scale: 0.8}, 1000)
-		]);
+			await Promise.all([
+				animateTo(ufoPos, {x: 1300, y: -50, scale: 0.7}, 1000),
+				animateTo(catPos, {x: 1500, y: 150, scale: 0.8}, 1000)
+			]);
 
-		await setText("Treasure was just abducted by aliens! 😿");
+			await setText("Treasure was just abducted by aliens! 😿");
+		}
+
+		setText(undefined);
+		saveState({level: 2});
+		clickHandlers.value = {
+			bear: async ()=> {
+				await setText("Bear: I'm RAD.");
+				await setText("Bear: Because I'm radioactive.");
+				await setText("Bear: So you should stay away.");
+				clickHandlers.value!.bear = async ()=> {
+					changeScene(<GameOverScene/>);
+					setText("You died from radiation 🐻");
+					return;
+				}
+				setText(undefined);
+			},
+			home: async ()=> {
+				await runGame();
+			}
+		};
 	}
 	
 	runGame();

@@ -15,6 +15,12 @@ export function Image(params: ImgParams) {
   if (params.pos.scale !== undefined) {
     style += `scale:${params.pos.scale}`;
   }
-  return <img src={params.src} style={style} onClick={params.onClick}>
+  return <img src={params.src} style={style} onClick={(e) => {
+    if (params.onClick !== undefined) {
+      e.stopImmediatePropagation();
+      e.stopPropagation();
+      params.onClick();
+    }
+  }}>
   </img>
 }

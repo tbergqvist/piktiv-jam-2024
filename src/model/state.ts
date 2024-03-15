@@ -3,6 +3,9 @@ export interface SaveState {
 }
 
 export function saveState(state: SaveState) {
+  if (loadState().level > state.level) {
+    return;
+  }
   localStorage.setItem("jam-2024", JSON.stringify(state));
 }
 

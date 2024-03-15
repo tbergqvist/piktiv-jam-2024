@@ -7,6 +7,7 @@ export function preloadImages() {
     "/images/mountains.jpg",
     "/images/arrow.png",
     "/images/ufo.png",
+    "/images/bear.png",
   ];
 
   const refs = images.map(path => {
