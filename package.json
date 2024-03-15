@@ -1,0 +1,25 @@
+{
+	"name": "piktiv-jam-2024",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"dev": "vite",
+		"build": "tsc && vite build",
+		"preview": "vite preview"
+	},
+	"eslintConfig": {
+		"extends": "preact"
+	},
+	"dependencies": {
+		"@preact/signals": "^1.2.1",
+		"preact": "^10.19.3"
+	},
+	"devDependencies": {
+		"@preact/preset-vite": "^2.7.0",
+		"autoprefixer": "^10.4.16",
+		"postcss": "^8.4.32",
+		"tailwindcss": "^3.4.0",
+		"typescript": "^5.2.2",
+		"vite": "^5.0.8"
+	}
+}
