@@ -7,7 +7,9 @@ const game = createGame();
 
 export function App() {
 	return (
-		<GameView game={game}/>
+		<div class="everything">
+			<GameView game={game}/>
+		</div>
 	);
 }
 
