@@ -1,5 +1,5 @@
 export function GameOverScene() {
   return <>
-    <img src="/images/game-over.jpg"/>
+    <img src="./images/game-over.jpg"/>
   </>;
 }
