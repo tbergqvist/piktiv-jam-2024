@@ -281,7 +281,8 @@ export function createGame() {
 		playSound("alien-screaming");
 		await setText("The alien died!");
 		setText(undefined);
-		alien1Pos.value = {...alien1Pos.value, scale: 0};
+		animateTo(alien1Pos, {x: 1000, y: -500, scale: 0}, 300);
+		rotateTo(alien1Pos, 900, 300);
 		bacteriaPos.value = {...bacteriaPos.value, scale: 0};
 		await animateTo(alien2Pos, {x: 500, y: 350, scale: 1.5}, 1000);
 		const response2 = await showQuestion("The second alien steps up and your nose is no longer loaded with biological warfare. What will you do?", "Give them a piece of Liquorice", "Do a dance move");
@@ -298,7 +299,8 @@ export function createGame() {
 		}
 		playSound("alien-screaming");
 		await setText("You give a piece of liquorice to the alien and they die instantly since liquorice is disgusting and no living thing could possible survive such a horrible taste.");
-		alien2Pos.value = {...alien1Pos.value, scale: 0};
+		animateTo(alien2Pos, {x: -300, y: -500, scale: 0}, 300);
+		rotateTo(alien2Pos, 900, 300);
 		setText(undefined);
 		await animateTo(alien3Pos, {x: 500, y: 350, scale: 1.5}, 1000);
 		const response3 = await showQuestion("The final alien steps up and points his blaster at you!", "Parry", "Start crying");
@@ -352,7 +354,12 @@ export function createGame() {
 		}
 		playSound("alien-screaming");
 		await setText("You parry all the shoots and manage to kill the alien!");
-		alien3Pos.value = {...alien3Pos.value, scale: 0};
+		(async ()=> {
+			await animateTo(alien3Pos, {x: 1000, y: -500, scale: 0.5}, 300);
+			await animateTo(alien3Pos, {x: 800, y: 300, scale: 2}, 300);
+			await animateTo(alien3Pos, {x: -200, y: -500, scale: 0}, 300);
+		})();
+		await rotateTo(alien3Pos, 2700, 900);
 		playSound("cat");
 		await Promise.all([
 			setText("Treasure jumps up in your lap and you return safely to earth."),
