@@ -261,7 +261,7 @@ export function createGame() {
 		const allowBlasterClick = new Signal(true);
 
 		changeScene(<MarsScene catPos={catPos} alien1Pos={alien1Pos} alien2Pos={alien2Pos} alien3Pos={alien3Pos} bacteriaPos={bacteriaPos} blasters={blasters} allowBlasterClick={allowBlasterClick}/>);
-		await setText("You arrived on Mars and you see Treasure surrounded by aliens!");
+		await setText("You arrive on Mars and you see Treasure surrounded by aliens!");
 		await animateTo(alien1Pos, {x: 500, y: 350, scale: 1.5}, 1000);
 		const response = await showQuestion("The first alien stands in your way. What do you do?", "Use your superior intellect to debate them", "Sneeze on them");
 		if (response)
