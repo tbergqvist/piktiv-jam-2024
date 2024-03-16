@@ -7,6 +7,7 @@ import { GameOverScene } from "../view/game-over-scene";
 import { MountainClicks, MountainScene } from "../view/mountain-scene";
 import { loadState, saveState } from "./state";
 import { SpaceStationClickHandlers, SpaceStationScene } from "../view/space-station-scene";
+import { Blaster, MarsScene } from "../view/mars-scene";
 
 function animateTo(pos: Signal<ImgPos>, endPos: ImgPos, animationTime: number): Promise<void> {
 	const startPos = {
@@ -58,7 +59,6 @@ function rotateTo(pos: Signal<ImgPos>, endRotation: number, animationTime: numbe
 			
 			const passedTime = time - start;
 			if (passedTime >= animationTime) {
-				console.log(passedTime, animationTime, endRotation);
 				pos.value = {
 					...pos.value,
 					rotation: endRotation
@@ -75,6 +75,12 @@ function rotateTo(pos: Signal<ImgPos>, endRotation: number, animationTime: numbe
 		}
 
 		requestAnimationFrame(step);
+	});
+}
+
+function delay(time: number) {
+	return new Promise((resolve)=> {
+		setTimeout(resolve, time);
 	});
 }
 
@@ -196,6 +202,7 @@ export function createGame() {
 
 	async function runSpaceStationScene() {
 		const spaceStationRocket = new Signal(false);
+		const astronautVisible = new Signal(true);
 		const rocketPos = new Signal({x: 451, y: 285, scale: 1, rotation: 0} as ImgPos);
 		const clickHandlers: Signal<SpaceStationClickHandlers> = new Signal({
 			astronaut: async ()=> {
@@ -210,20 +217,140 @@ export function createGame() {
 					setText(undefined);
 					spaceStationRocket.value = true;
 					await animateTo(rocketPos, {x: 600, y: -300, scale: 1}, 500);
-					await rotateTo(rocketPos, 180, 200);
+					await rotateTo(rocketPos, 900, 500);
 					await animateTo(rocketPos, {x: 600, y: 400, scale: 1}, 200);
 					await setText("Astronaut: LOL! Get rekt");
 					changeScene(<GameOverScene/>);
 					setText("You blew up 💀");
 				} else {
-					await setText("Astronaut: Oki, I guess I will drive you then.");
+					await setText("Astronaut: Oki, guess I will drive you then.");
+					setText(undefined);
+					astronautVisible.value = false;
+					spaceStationRocket.value = true;
+					await animateTo(rocketPos, {x: 451, y: 200, scale: 1}, 2000);
+					await animateTo(rocketPos, {x: 451, y: -700, scale: 1}, 500);
+					save(3);
+					await runMarsScene();
 				}
 			}
 		});
-		changeScene(<SpaceStationScene spaceStationRocket={spaceStationRocket} clickHandlers={clickHandlers} rocketPos={rocketPos}/>);
+
+		changeScene(<SpaceStationScene spaceStationRocket={spaceStationRocket} clickHandlers={clickHandlers} rocketPos={rocketPos} astronautVisible={astronautVisible}/>);
 	}
-	
-	runGame();
+
+	async function runMarsScene() {
+		const alien1Pos = new Signal({x: 200, y: 350, scale: 1, rotation: 0} as ImgPos);
+		const alien2Pos = new Signal({x: 800, y: 350, scale: 1, rotation: 0} as ImgPos);
+		const alien3Pos = new Signal({x: 900, y: 450, scale: 1, rotation: 0} as ImgPos);
+		const catPos = new Signal({x: 600, y: 450, scale: 1} as ImgPos);
+		const bacteriaPos = new Signal({x: 500, y: 320, scale: 0, rotation: 0} as ImgPos);
+		const blasters: Signal<Blaster[]> = new Signal([]);
+		const allowBlasterClick = new Signal(true);
+
+		changeScene(<MarsScene catPos={catPos} alien1Pos={alien1Pos} alien2Pos={alien2Pos} alien3Pos={alien3Pos} bacteriaPos={bacteriaPos} blasters={blasters} allowBlasterClick={allowBlasterClick}/>);
+		await setText("You arrived on Mars and you see Treasure surrounded by aliens!");
+		await animateTo(alien1Pos, {x: 500, y: 350, scale: 1.5}, 1000);
+		const response = await showQuestion("The first alien stands in your way. What do you do?", "Use your superior intellect to debate them", "Sneeze on them");
+		if (response)
+		{
+			await setText("The alien shoots you with a blaster! 🔫");
+			changeScene(<GameOverScene/>);
+			await setText("You got shoot and died 💥");
+			return;
+		}
+
+		await Promise.all([
+			setText("You sneeze on the alien"),
+			animateTo(bacteriaPos, {...bacteriaPos.value, scale: 1}, 300)
+		]);
+		await setText("The alien died!");
+		setText(undefined);
+		alien1Pos.value = {...alien1Pos.value, scale: 0};
+		bacteriaPos.value = {...bacteriaPos.value, scale: 0};
+		await animateTo(alien2Pos, {x: 500, y: 350, scale: 1.5}, 1000);
+		const response2 = await showQuestion("The second alien steps up and your nose is no longer loaded with biological warfare. What will you do?", "Give them a piece of Liquorice", "Do a dance move");
+		if (!response2)
+		{
+				await setText("You do a sick dance move!");
+				await setText("The move had no effect...");
+				await setText("The alien shoots you with his blaster 🔫");
+				await setText("It's super effective!");
+				changeScene(<GameOverScene/>);
+				await setText("You died 😢");
+				return;
+		}
+		await setText("You give a piece of liquorice to the alien and they die instantly since liquorice is disgusting and no living thing could possible survive such a horrible taste.");
+		alien2Pos.value = {...alien1Pos.value, scale: 0};
+		setText(undefined);
+		await animateTo(alien3Pos, {x: 500, y: 350, scale: 1.5}, 1000);
+		const response3 = await showQuestion("The final alien steps up and points his blaster at you!", "Parry", "Start crying");
+		if (!response3)
+		{
+			await setText("You start crying.");
+			await setText("The alien shoots you. PEW PEW");
+			changeScene(<GameOverScene/>);
+			await setText("You're dead 👽");
+			return;
+		}
+
+		function spawnBlaster() : Promise<boolean> {
+			let pos = new Signal({x: Math.random() * (1280 - 250), y: Math.random() * (720 - 250), scale: 1});
+			const newBlaster: Blaster = {
+				pos,
+				onClick() {
+					pos.value = {
+						...pos.value,
+						scale: 0
+					};
+				}
+			};
+			blasters.value = [...blasters.value, newBlaster];
+			return new Promise((resolve)=> {
+				setTimeout(() => {
+					console.log(newBlaster.pos.value.scale);
+					resolve(newBlaster.pos.value.scale === 0);
+				}, 1500);
+			})
+		}
+		setText("Click the blaster fire to parry!");
+		const bla1 = spawnBlaster();
+		await delay(300);
+		const bla2 = spawnBlaster();
+		await delay(200);
+		const bla3 = spawnBlaster();
+		await delay(500);
+		const bla4 = spawnBlaster();
+		const blasterResults = await Promise.all([bla1, bla2, bla3, bla4]);
+		if (!blasterResults.every(a => a)) {
+			allowBlasterClick.value = false;
+			await setText("You failed to parry...");
+			changeScene(<GameOverScene/>);
+			await setText("Too slow, git gud 🐌");
+			return;
+		}
+		await setText("You parry all the shoots and manage to kill the alien!");
+		alien3Pos.value = {...alien3Pos.value, scale: 0};
+		await Promise.all([
+			setText("Treasure jumps up in your lap and you return safely to earth."),
+			animateTo(catPos, {...catPos.value, scale: 10}, 1000)
+		]);
+
+		await runHomeEndScene();
+	}
+
+	async function runHomeEndScene() {
+		const openedDoor = new Signal(false);
+		const catPos = new Signal({x: 320, y:420, scale: 0.6} as ImgPos);
+		const clickHandlers: Signal<HomeClicks | undefined> = new Signal(undefined);
+		changeScene(<HomeScene openedDoor={openedDoor} catPos={catPos} clickHandlers={clickHandlers} />);
+		await setText("You are back home with Treasure and everyone is happy! THE END");
+	}
+
+	if (currentState.level >= 3) {
+		runMarsScene();
+	} else {
+		runGame();
+	}
 
 	return {
 		currentScene,

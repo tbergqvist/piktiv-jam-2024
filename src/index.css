@@ -6,6 +6,10 @@ body {
 	user-select: none;
 }
 
+.clickable {
+	pointer-events: all;
+}
+
 .game-area {
 	position: relative;
 	width: 100%;
@@ -65,7 +69,6 @@ body {
 	justify-self: center;
 	align-self: center;
 	text-align: center;
-	user-select: none;
 	opacity: 80%;
 }
 

@@ -5,7 +5,6 @@ export function preloadImages() {
     "/images/open-door.jpg",
     "/images/game-over.jpg",
     "/images/mountains.jpg",
-    "/images/arrow.png",
     "/images/ufo.png",
     "/images/bear.png",
     "/images/space-station.png",
@@ -13,6 +12,10 @@ export function preloadImages() {
     "/images/space-station-no-rocket.jpg",
     "/images/astronaut.png",
     "/images/rocket.png",
+    "/images/mars.jpg",
+    "/images/alien.png",
+    "/images/bacteria.png",
+    "/images/blaster-fire.png",
   ];
 
   const refs = images.map(path => {

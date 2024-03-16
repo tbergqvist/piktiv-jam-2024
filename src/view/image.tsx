@@ -9,6 +9,7 @@ export interface ImgParams {
   src: string;
   pos: ImgPos;
   onClick?: ()=>void;
+  flip?: boolean;
 }
 
 export function Image(params: ImgParams) {
@@ -17,9 +18,12 @@ export function Image(params: ImgParams) {
     style += `scale:${params.pos.scale};`;
   }
   if (params.pos.rotation !== undefined) {
-    console.log("rot", params.pos.rotation);
     style += `rotate:${params.pos.rotation}deg;`;
   }
+  if ((params.flip ?? false) !== false) {
+    style += "transform:scale(-1, 1);";
+  }
+
   return <img src={params.src} style={style} draggable={false} onClick={(e) => {
     if (params.onClick !== undefined) {
       e.stopImmediatePropagation();
