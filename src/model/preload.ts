@@ -24,3 +24,27 @@ export function preloadImages() {
     return img;
   });
 }
+
+export function preloadSounds() {
+	const sounds = [
+    {name: "cat", src: "/sounds/cat-meow.mp3"},
+    {name: "spaceship", src: "/sounds/alien-spaceship.mp3"},
+    {name: "scream", src: "/sounds/scream.mp3" },
+    {name: "rocket", src: "/sounds/rocket.mp3" },
+    {name: "rocket-crash", src: "/sounds/rocket-crash.mp3" },
+    {name: "sneeze", src: "/sounds/sneeze.mp3" },
+    {name: "alien-screaming", src: "/sounds/alien-screaming.mp3" },
+    {name: "win", src: "/sounds/win.mp3" },
+    {name: "blaster1", src: "/sounds/blaster.mp3" },
+    {name: "blaster2", src: "/sounds/blaster.mp3" },
+    {name: "blaster3", src: "/sounds/blaster.mp3" },
+    {name: "blaster4", src: "/sounds/blaster.mp3" },
+  ];
+
+  return sounds.reduce((sounds, current) => {
+    let audio = new Audio();
+    audio.src = current.src;
+    sounds[current.name] = audio;
+    return sounds;
+  }, {} as {[key: string]: HTMLAudioElement});
+}

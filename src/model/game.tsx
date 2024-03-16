@@ -2,7 +2,7 @@ import { Signal } from "@preact/signals";
 import { HomeClicks, HomeScene } from "../view/home-scene";
 import { JSX } from "preact/jsx-runtime";
 import { ImgPos } from "../view/image";
-import { preloadImages } from "./preload";
+import { preloadImages, preloadSounds } from "./preload";
 import { GameOverScene } from "../view/game-over-scene";
 import { MountainClicks, MountainScene } from "../view/mountain-scene";
 import { loadState, saveState } from "./state";
@@ -98,11 +98,17 @@ export function createGame() {
 	let clickPromise: (()=>void) | undefined = undefined;
 
 	preloadImages();
+	const sounds = preloadSounds();
 
-	function setText(text: string | undefined): Promise<void> {
+	function setText(text: string | undefined, soundName?: string): Promise<void> {
 		currentText.value = text;
 		return new Promise((resolver)=> {
-			clickPromise = resolver;
+			clickPromise = ()=> {
+				if (soundName !== undefined) {
+					playSound(soundName);
+				}
+				resolver();
+			};
 		});
 	}
 
@@ -128,6 +134,11 @@ export function createGame() {
 		}
 	}
 
+	function playSound(name: string) {
+		const audio = sounds[name];
+		audio.play();
+	}
+
 	async function runGame() {
 		const openedDoor = new Signal(false);
 		const catPos = new Signal({x: 320, y:420, scale: 0.6} as ImgPos);
@@ -138,7 +149,7 @@ export function createGame() {
 			openedDoor.value = true;
 			catPos.value = { x: 0, y: 0, scale: 0 };
 		} else {
-			await setText("You are chilling at home with your cute cat Treasure when suddenly...");
+			await setText("You are chilling at home with your cute cat Treasure when suddenly...", "cat");
 			openedDoor.value = true;
 			setText("The door opens!");
 			await animateTo(catPos, {x: 1050, y: 400, scale: 0.4}, 1000);
@@ -166,6 +177,7 @@ export function createGame() {
 			ufoPos.value = {x: 1300, y: -50, scale: 0.7};
 			catPos.value = {x: 1500, y: 150, scale: 0.8};
 		} else {
+			playSound("spaceship");
 			await animateTo(ufoPos, {x: 700, y: 100, scale: 0.4}, 1000);
 			await Promise.all([
 				animateTo(ufoPos, {x: 700, y: -50, scale: 0.5}, 1000),
@@ -188,6 +200,7 @@ export function createGame() {
 				await setText("Bear: Because I'm radioactive.");
 				await setText("Bear: So you should stay away.");
 				clickHandlers.value!.bear = async ()=> {
+					playSound("scream");
 					changeScene(<GameOverScene/>);
 					setText("You died from radiation 💀");
 					return;
@@ -213,22 +226,22 @@ export function createGame() {
 			spaceRocket: async ()=> {
 				const response = await showQuestion("Astronaut: Do you know how to drive one of those rockets?", "Yes", "No");
 				if (response) {
-					await setText("Astronaut: Cool, here's the keys. Good luck!");
+					await setText("Astronaut: Cool, here's the keys. Good luck!", "rocket-crash");
 					setText(undefined);
 					spaceStationRocket.value = true;
 					await animateTo(rocketPos, {x: 600, y: -300, scale: 1}, 500);
 					await rotateTo(rocketPos, 900, 500);
 					await animateTo(rocketPos, {x: 600, y: 400, scale: 1}, 200);
-					await setText("Astronaut: LOL! Get rekt");
+					await setText("Astronaut: LOL! Get rekt", "scream");
 					changeScene(<GameOverScene/>);
 					setText("You blew up 💀");
 				} else {
-					await setText("Astronaut: Oki, guess I will drive you then.");
+					await setText("Astronaut: Oki, guess I will drive you then.", "rocket");
 					setText(undefined);
 					astronautVisible.value = false;
 					spaceStationRocket.value = true;
-					await animateTo(rocketPos, {x: 451, y: 200, scale: 1}, 2000);
-					await animateTo(rocketPos, {x: 451, y: -700, scale: 1}, 500);
+					await animateTo(rocketPos, {x: 451, y: 200, scale: 1}, 500);
+					await animateTo(rocketPos, {x: 451, y: -700, scale: 1}, 2000);
 					save(3);
 					await runMarsScene();
 				}
@@ -253,16 +266,19 @@ export function createGame() {
 		const response = await showQuestion("The first alien stands in your way. What do you do?", "Use your superior intellect to debate them", "Sneeze on them");
 		if (response)
 		{
-			await setText("The alien shoots you with a blaster! 🔫");
+			playSound("blaster1");
+			await setText("The alien shoots you with a blaster! 🔫", "scream");
 			changeScene(<GameOverScene/>);
 			await setText("You got shoot and died 💥");
 			return;
 		}
 
+		playSound("sneeze");
 		await Promise.all([
 			setText("You sneeze on the alien"),
 			animateTo(bacteriaPos, {...bacteriaPos.value, scale: 1}, 300)
 		]);
+		playSound("alien-screaming");
 		await setText("The alien died!");
 		setText(undefined);
 		alien1Pos.value = {...alien1Pos.value, scale: 0};
@@ -273,12 +289,14 @@ export function createGame() {
 		{
 				await setText("You do a sick dance move!");
 				await setText("The move had no effect...");
+				playSound("blaster1");
 				await setText("The alien shoots you with his blaster 🔫");
-				await setText("It's super effective!");
+				await setText("It's super effective!", "scream");
 				changeScene(<GameOverScene/>);
 				await setText("You died 😢");
 				return;
 		}
+		playSound("alien-screaming");
 		await setText("You give a piece of liquorice to the alien and they die instantly since liquorice is disgusting and no living thing could possible survive such a horrible taste.");
 		alien2Pos.value = {...alien1Pos.value, scale: 0};
 		setText(undefined);
@@ -287,7 +305,8 @@ export function createGame() {
 		if (!response3)
 		{
 			await setText("You start crying.");
-			await setText("The alien shoots you. PEW PEW");
+			playSound("blaster1");
+			await setText("The alien shoots you.", "scream");
 			changeScene(<GameOverScene/>);
 			await setText("You're dead 👽");
 			return;
@@ -314,22 +333,28 @@ export function createGame() {
 		}
 		setText("Click the blaster fire to parry!");
 		const bla1 = spawnBlaster();
+		playSound("blaster1");
 		await delay(300);
 		const bla2 = spawnBlaster();
+		playSound("blaster2");
 		await delay(200);
 		const bla3 = spawnBlaster();
+		playSound("blaster3");
 		await delay(500);
 		const bla4 = spawnBlaster();
+		playSound("blaster4");
 		const blasterResults = await Promise.all([bla1, bla2, bla3, bla4]);
 		if (!blasterResults.every(a => a)) {
 			allowBlasterClick.value = false;
-			await setText("You failed to parry...");
+			await setText("You failed to parry...", "scream");
 			changeScene(<GameOverScene/>);
 			await setText("Too slow, git gud 🐌");
 			return;
 		}
+		playSound("alien-screaming");
 		await setText("You parry all the shoots and manage to kill the alien!");
 		alien3Pos.value = {...alien3Pos.value, scale: 0};
+		playSound("cat");
 		await Promise.all([
 			setText("Treasure jumps up in your lap and you return safely to earth."),
 			animateTo(catPos, {...catPos.value, scale: 10}, 1000)
@@ -343,6 +368,7 @@ export function createGame() {
 		const catPos = new Signal({x: 320, y:420, scale: 0.6} as ImgPos);
 		const clickHandlers: Signal<HomeClicks | undefined> = new Signal(undefined);
 		changeScene(<HomeScene openedDoor={openedDoor} catPos={catPos} clickHandlers={clickHandlers} />);
+		playSound("win");
 		await setText("You are back home with Treasure and everyone is happy! THE END");
 	}
 
