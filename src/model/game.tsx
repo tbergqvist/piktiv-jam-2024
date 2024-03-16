@@ -326,7 +326,6 @@ export function createGame() {
 			blasters.value = [...blasters.value, newBlaster];
 			return new Promise((resolve)=> {
 				setTimeout(() => {
-					console.log(newBlaster.pos.value.scale);
 					resolve(newBlaster.pos.value.scale === 0);
 				}, 1500);
 			})
