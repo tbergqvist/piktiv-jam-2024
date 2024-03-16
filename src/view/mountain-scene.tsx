@@ -8,16 +8,16 @@ export interface Params {
 }
 
 export interface MountainClicks {
-  home: ()=>void;
   bear: ()=>void;
+  spaceStation: ()=>void;
 }
 
 export function MountainScene(params: Params) {
   return <>
-    <img src="/images/mountains.jpg"/>
+    <Image src="/images/mountains.jpg" pos={{x: 0, y: 0, scale: 1}}/>
+    <Image src="/images/space-station.png" pos={{x: 940, y: 87, scale: 1}} onClick={()=> params.clickHandlers.value?.spaceStation()} />
     <Image src="/images/cat.png" pos={params.catPos.value} />
     <Image src="/images/ufo.png" pos={params.ufoPos.value} />
     <Image src="/images/bear.png" pos={{x: 320, y: 420, scale: 1}} onClick={()=> params.clickHandlers.value?.bear()} />
-    {params.clickHandlers.value && <Image src="/images/arrow.png" pos={{x: 1140, y: 350}} onClick={()=>params.clickHandlers.value?.home()}/>}
   </>;
 }

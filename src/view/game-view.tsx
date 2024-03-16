@@ -5,23 +5,35 @@ export function QuestionView({question}: {question: Question | undefined}) {
 		return <></>;
 	}
 
+	function handleClick(val: boolean) {
+		return (e: Event)=> {
+			e.preventDefault();
+			e.stopPropagation();
+			e.stopImmediatePropagation();
+			question!.callback(val);
+		}
+	}
+
 	return <div class="question">
-		<button onClick={() => question.callback(true)}>
+		<button onClick={handleClick(true)}>
 			{question.yesText}
 		</button>
-		<button onClick={() => question.callback(false)}>
+		<button onClick={handleClick(false)}>
 			{question.noText}
 		</button>
 	</div>;
 }
 
 export function GameView({game}: {game: Game}) {
+	const style = game.currentText.value !== undefined ? "pointer-events:none;" : "";
 	return <div class="game-area" onClick={game.sceneClicked}>
-		{game.currentScene}
-		<QuestionView question={game.currentQuestion.value}/>
-		{game.currentText.value && <div class="text-area">
-			<div class="text-background"></div>
-			<span dangerouslySetInnerHTML={{__html: game.currentText.value ?? ""}}></span>
-		</div>}
+		<div style={style}>
+			{game.currentScene}
+			<QuestionView question={game.currentQuestion.value}/>
+			{game.currentText.value && <div class="text-area">
+				<div class="text-background"></div>
+				<span dangerouslySetInnerHTML={{__html: game.currentText.value ?? ""}}></span>
+			</div>}
+		</div>
 	</div>;
 }

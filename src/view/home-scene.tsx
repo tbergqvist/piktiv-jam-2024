@@ -13,9 +13,8 @@ export interface HomeClicks {
 
 export function HomeScene(params: Params) {
   return <>
-    <img src="/images/home.jpg"/>
+    <Image src="/images/home.jpg" pos={{x: 0, y: 0, scale: 1}}/>
     {params.openedDoor.value && <Image src="/images/open-door.jpg" pos={{x: 1040, y: 270}} onClick={()=> {params.clickHandlers.value?.door()}}/>}
 		<Image src="/images/cat.png" pos={params.catPos.value}/>
-    {params.clickHandlers.value && <Image src="/images/arrow.png" pos={{x: 1040, y: 350}} onClick={()=> {params.clickHandlers.value?.door()}}/>}
   </>;
 }

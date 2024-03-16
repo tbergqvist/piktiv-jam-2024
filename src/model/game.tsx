@@ -6,6 +6,7 @@ import { preloadImages } from "./preload";
 import { GameOverScene } from "../view/game-over-scene";
 import { MountainClicks, MountainScene } from "../view/mountain-scene";
 import { loadState, saveState } from "./state";
+import { SpaceStationClickHandlers, SpaceStationScene } from "../view/space-station-scene";
 
 function animateTo(pos: Signal<ImgPos>, endPos: ImgPos, animationTime: number): Promise<void> {
 	const startPos = {
@@ -23,16 +24,52 @@ function animateTo(pos: Signal<ImgPos>, endPos: ImgPos, animationTime: number): 
 			
 			const passedTime = time - start;
 			if (passedTime >= animationTime) {
-				pos.value = endPos;
+				pos.value = {
+					...pos.value,
+					...endPos
+				}
 				return resolve();
 			}
 
 			const ratio = passedTime / animationTime;
 
 			pos.value = {
+				...pos.value,
 				x: startPos.x * (1 - ratio) + endPos.x * ratio,
 				y: startPos.y * (1 - ratio) + endPos.y * ratio,
-				scale: startPos.scale! * (1 - ratio) + endPos.scale! * ratio,
+				scale: startPos.scale! * (1 - ratio) + endPos.scale! * ratio
+			}
+			requestAnimationFrame(step);
+		}
+
+		requestAnimationFrame(step);
+	});
+}
+
+function rotateTo(pos: Signal<ImgPos>, endRotation: number, animationTime: number): Promise<void> {
+	const startRotation = pos.value.rotation ?? 0;
+
+	let start = 0;
+	return new Promise((resolve) => {
+		function step(time: number) {
+			if (start == 0) {
+				start = time;
+			}
+			
+			const passedTime = time - start;
+			if (passedTime >= animationTime) {
+				console.log(passedTime, animationTime, endRotation);
+				pos.value = {
+					...pos.value,
+					rotation: endRotation
+				};
+				return resolve();
+			}
+
+			const ratio = passedTime / animationTime;
+			pos.value = {
+				...pos.value,
+				rotation: startRotation * (1 - ratio) + endRotation * ratio,
 			}
 			requestAnimationFrame(step);
 		}
@@ -78,6 +115,12 @@ export function createGame() {
 	}
 
 	const currentState = loadState();
+	function save(level: number) {
+		if (level > currentState.level) {
+			currentState.level = level;
+			saveState({level});
+		}
+	}
 
 	async function runGame() {
 		const openedDoor = new Signal(false);
@@ -103,7 +146,7 @@ export function createGame() {
 			}
 		}
 
-		saveState({level: 1});
+		save(1);
 		setText(undefined);
 		clickHandlers.value = { door: runMountainScene };
 	}
@@ -132,7 +175,7 @@ export function createGame() {
 		}
 
 		setText(undefined);
-		saveState({level: 2});
+		save(2);
 		clickHandlers.value = {
 			bear: async ()=> {
 				await setText("Bear: I'm RAD.");
@@ -140,15 +183,44 @@ export function createGame() {
 				await setText("Bear: So you should stay away.");
 				clickHandlers.value!.bear = async ()=> {
 					changeScene(<GameOverScene/>);
-					setText("You died from radiation 🐻");
+					setText("You died from radiation 💀");
 					return;
 				}
 				setText(undefined);
 			},
-			home: async ()=> {
-				await runGame();
+			spaceStation: async()=> {
+				await runSpaceStationScene();
 			}
 		};
+	}
+
+	async function runSpaceStationScene() {
+		const spaceStationRocket = new Signal(false);
+		const rocketPos = new Signal({x: 451, y: 285, scale: 1, rotation: 0} as ImgPos);
+		const clickHandlers: Signal<SpaceStationClickHandlers> = new Signal({
+			astronaut: async ()=> {
+				await setText("Astronaut: Hello fellow human!");
+				await setText("Astronaut: What a nice day for space travel!");
+				setText(undefined);
+			},
+			spaceRocket: async ()=> {
+				const response = await showQuestion("Astronaut: Do you know how to drive one of those rockets?", "Yes", "No");
+				if (response) {
+					await setText("Astronaut: Cool, here's the keys. Good luck!");
+					setText(undefined);
+					spaceStationRocket.value = true;
+					await animateTo(rocketPos, {x: 600, y: -300, scale: 1}, 500);
+					await rotateTo(rocketPos, 180, 200);
+					await animateTo(rocketPos, {x: 600, y: 400, scale: 1}, 200);
+					await setText("Astronaut: LOL! Get rekt");
+					changeScene(<GameOverScene/>);
+					setText("You blew up 💀");
+				} else {
+					await setText("Astronaut: Oki, I guess I will drive you then.");
+				}
+			}
+		});
+		changeScene(<SpaceStationScene spaceStationRocket={spaceStationRocket} clickHandlers={clickHandlers} rocketPos={rocketPos}/>);
 	}
 	
 	runGame();

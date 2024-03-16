@@ -2,6 +2,10 @@ body {
 	margin: 0;
 }
 
+* {
+	user-select: none;
+}
+
 .game-area {
 	position: relative;
 	width: 100%;
@@ -42,6 +46,7 @@ body {
 .question {
 	display: flex;
 	margin: auto;
+	pointer-events: all;
 	flex-direction: column;
 	position: absolute;
 	width: 100%;
@@ -62,4 +67,12 @@ body {
 	text-align: center;
 	user-select: none;
 	opacity: 80%;
+}
+
+.space-rocket {
+	height: 400px;
+	width: 160px;
+	position: absolute;
+	top: 180px;
+	left: 570px;
 }
