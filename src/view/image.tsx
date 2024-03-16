@@ -24,6 +24,10 @@ export function Image(params: ImgParams) {
     style += "transform:scale(-1, 1);";
   }
 
+  if (params.onClick !== undefined) {
+    style += "cursor: pointer;";
+  }
+
   return <img src={params.src} style={style} draggable={false} onClick={(e) => {
     if (params.onClick !== undefined) {
       e.stopImmediatePropagation();

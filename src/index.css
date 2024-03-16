@@ -57,7 +57,6 @@ body {
 	height: 85%;
 	top: 0;
 	justify-content: space-around;
-	
 }
 
 .question button {
@@ -78,4 +77,5 @@ body {
 	position: absolute;
 	top: 180px;
 	left: 570px;
+	cursor: pointer;
 }
